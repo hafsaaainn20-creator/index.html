@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Study Focus Spotify Widget</title>
+  <style>
+    :root {
+      /* Matching your Notion template's warm sepia/gold tones */
+      --glow-color: #d4a373;
+      --glow-intensity: 22px;
+      --border-radius: 18px;
+      --bg-color: rgba(30, 30, 30, 0.85);
+      --scale-hover: 1.015;
+      --transition-speed: 0.4s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    /* Container Outer Frame */
+    .widget-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--border-radius);
+      transition: transform var(--transition-speed) ease;
+    }
+
+    .widget-container:hover {
+      transform: scale(var(--scale-hover));
+    }
+
+    /* Soft Warm Pulsing Glow */
+    .glow-aura {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      background: radial-gradient(circle, var(--glow-color) 0%, transparent 75%);
+      border-radius: calc(var(--border-radius) + 4px);
+      filter: blur(var(--glow-intensity));
+      opacity: 0.5;
+      z-index: 1;
+      animation: warmPulse 5s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes warmPulse {
+      0% {
+        opacity: 0.35;
+        filter: blur(calc(var(--glow-intensity) * 0.8));
+      }
+      100% {
+        opacity: 0.7;
+        filter: blur(calc(var(--glow-intensity) * 1.2));
+      }
+    }
+
+    /* Glassmorphism Frame Matching Template Dark Mode */
+    .card-frame {
+      position: relative;
+      z-index: 2;
+      background: var(--bg-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(212, 163, 115, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border-radius: var(--border-radius);
+      padding: 8px;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 352px;
+      border: none;
+      border-radius: calc(var(--border-radius) - 6px);
+      display: block;
+    }
+
+    /* Settings Button & Control Overlay */
+    .customize-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 3;
+      background: rgba(0,0,0,0.6);
+      color: #d4a373;
+      border: 1px solid rgba(212, 163, 115, 0.3);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .customize-btn:hover {
+      background: rgba(212, 163, 115, 0.2);
+      transform: rotate(45deg);
+    }
+
+    .control-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(22, 22, 22, 0.95);
+      z-index: 4;
+      border-radius: var(--border-radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      color: #e0e0e0;
+      font-size: 12px;
+    }
+
+    .control-panel.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #d4a373;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 16px;
+      color: #aaa;
+    }
+    .close-btn:hover { color: #fff; }
+
+    .control-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-group label { color: #bbb; }
+
+    .control-group input[type="color"],
+    .control-group input[type="range"],
+    .control-group input[type="text"] {
+      background: #2b2b2b;
+      border: 1px solid #444;
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+
+    .control-group input[type="text"] {
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-container" id="widget">
+    <div class="glow-aura" id="glow"></div>
+
+    <button class="customize-btn" id="toggleBtn" title="Customize Accent">⚙️</button>
+
+    <div class="control-panel" id="controlPanel">
+      <div class="panel-header">
+        <span>Theme Customizer</span>
+        <span class="close-btn" id="closeBtn">✕</span>
+      </div>
+
+      <div class="control-group">
+        <label for="colorPicker">Glow Color:</label>
+        <input type="color" id="colorPicker" value="#d4a373">
+      </div>
+
+      <div class="control-group">
+        <label for="blurSlider">Glow Size:</label>
+        <input type="range" id="blurSlider" min="10" max="50" value="22">
+      </div>
+
+      <div class="control-group">
+        <label for="spotifyUrl">Spotify Embed URL:</label>
+        <input type="text" id="spotifyUrl" placeholder="Paste custom playlist embed link...">
+      </div>
+    </div>
+
+    <div class="card-frame">
+      <!-- Soft English / Acoustic Chill Study Playlist Embed -->
+      <iframe 
+        id="spotifyIframe"
+        src="https://open.spotify.com/embed/playlist/37i9dQZF1DX0smO2Bx1A2C?utm_source=generator&theme=0" 
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+        loading="lazy">
+      </iframe>
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const controlPanel = document.getElementById('controlPanel');
+    const colorPicker = document.getElementById('colorPicker');
+    const blurSlider = document.getElementById('blurSlider');
+    const spotifyUrlInput = document.getElementById('spotifyUrl');
+    const spotifyIframe = document.getElementById('spotifyIframe');
+    const root = document.documentElement;
+
+    toggleBtn.addEventListener('click', () => controlPanel.classList.add('active'));
+    closeBtn.addEventListener('click', () => controlPanel.classList.remove('active'));
+
+    colorPicker.addEventListener('input', (e) => {
+      root.style.setProperty('--glow-color', e.target.value);
+    });
+
+    blurSlider.addEventListener('input', (e) => {
+      root.style.setProperty('--glow-intensity', `${e.target.value}px`);
+    });
+
+    spotifyUrlInput.addEventListener('change', (e) => {
+      let url = e.target.value.trim();
+      if (url) {
+        if (!url.includes('/embed/')) {
+          url = url.replace('spotify.com/', 'spotify.com/embed/');
+        }
+        spotifyIframe.src = url;
+      }
+    });
+  </script>
+</body>
+</html>
