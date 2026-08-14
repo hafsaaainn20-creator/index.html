@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Spotify Notion Widget</title>
+  <style>
+    :root {
+      --glow-color: #1db954;
+      --glow-intensity: 25px;
+      --border-radius: 20px;
+      --bg-color: rgba(18, 18, 18, 0.75);
+      --scale-hover: 1.02;
+      --transition-speed: 0.4s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    /* Outer Wrapper with Animated Glow */
+    .widget-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--border-radius);
+      transition: transform var(--transition-speed) ease;
+    }
+
+    .widget-container:hover {
+      transform: scale(var(--scale-hover));
+    }
+
+    /* Ambient Pulsing Glow Background */
+    .glow-aura {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      right: -5px;
+      bottom: -5px;
+      background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+      border-radius: calc(var(--border-radius) + 5px);
+      filter: blur(var(--glow-intensity));
+      opacity: 0.6;
+      z-index: 1;
+      animation: pulseGlow 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        opacity: 0.4;
+        filter: blur(calc(var(--glow-intensity) * 0.8));
+      }
+      100% {
+        opacity: 0.85;
+        filter: blur(calc(var(--glow-intensity) * 1.3));
+      }
+    }
+
+    /* Glassmorphism Card Frame */
+    .card-frame {
+      position: relative;
+      z-index: 2;
+      background: var(--bg-color);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      border-radius: var(--border-radius);
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    /* Iframe Container */
+    iframe {
+      width: 100%;
+      height: 152px;
+      border: none;
+      border-radius: calc(var(--border-radius) - 6px);
+      display: block;
+    }
+
+    /* Customization Toggle & Controls Panel */
+    .customize-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 3;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .customize-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: rotate(45deg);
+    }
+
+    .control-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18, 18, 18, 0.95);
+      z-index: 4;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .control-panel.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 16px;
+      color: #aaa;
+    }
+    .close-btn:hover { color: #fff; }
+
+    .control-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-group label { color: #ccc; }
+
+    .control-group input[type="color"],
+    .control-group input[type="range"],
+    .control-group input[type="text"] {
+      background: #282828;
+      border: 1px solid #404040;
+      color: #fff;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .control-group input[type="text"] {
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-container" id="widget">
+    <!-- Pulsing Glow -->
+    <div class="glow-aura" id="glow"></div>
+
+    <!-- Toggle Controls Button -->
+    <button class="customize-btn" id="toggleBtn" title="Customize Widget">⚙️</button>
+
+    <!-- Customization Panel Overlay -->
+    <div class="control-panel" id="controlPanel">
+      <div class="panel-header">
+        <span>Widget Settings</span>
+        <span class="close-btn" id="closeBtn">✕</span>
+      </div>
+
+      <div class="control-group">
+        <label for="colorPicker">Glow Color:</label>
+        <input type="color" id="colorPicker" value="#1db954">
+      </div>
+
+      <div class="control-group">
+        <label for="blurSlider">Glow Size:</label>
+        <input type="range" id="blurSlider" min="10" max="50" value="25">
+      </div>
+
+      <div class="control-group">
+        <label for="radiusSlider">Border Radius:</label>
+        <input type="range" id="radiusSlider" min="8" max="30" value="20">
+      </div>
+
+      <div class="control-group">
+        <label for="spotifyUrl">Spotify Embed Link:</label>
+        <input type="text" id="spotifyUrl" placeholder="Paste Spotify embed URL...">
+      </div>
+    </div>
+
+    <!-- Main Card & Embed -->
+    <div class="card-frame">
+      <iframe 
+        id="spotifyIframe"
+        src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" 
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+        loading="lazy">
+      </iframe>
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const controlPanel = document.getElementById('controlPanel');
+    const colorPicker = document.getElementById('colorPicker');
+    const blurSlider = document.getElementById('blurSlider');
+    const radiusSlider = document.getElementById('radiusSlider');
+    const spotifyUrlInput = document.getElementById('spotifyUrl');
+    const spotifyIframe = document.getElementById('spotifyIframe');
+    const root = document.documentElement;
+
+    // Toggle Settings Panel
+    toggleBtn.addEventListener('click', () => controlPanel.classList.add('active'));
+    closeBtn.addEventListener('click', () => controlPanel.classList.remove('active'));
+
+    // Live Customization Listeners
+    colorPicker.addEventListener('input', (e) => {
+      root.style.setProperty('--glow-color', e.target.value);
+    });
+
+    blurSlider.addEventListener('input', (e) => {
+      root.style.setProperty('--glow-intensity', `${e.target.value}px`);
+    });
+
+    radiusSlider.addEventListener('input', (e) => {
+      root.style.setProperty('--border-radius', `${e.target.value}px`);
+    });
+
+    // Spotify Link Switcher
+    spotifyUrlInput.addEventListener('change', (e) => {
+      let url = e.target.value.trim();
+      if (url) {
+        // Simple conversion if standard link is pasted instead of embed link
+        if (!url.includes('/embed/')) {
+          url = url.replace('spotify.com/', 'spotify.com/embed/');
+        }
+        spotifyIframe.src = url;
+      }
+    });
+  </script>
+</body>
+</html>
