@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Nomad World Clock</title>
+<style>
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: linear-gradient(135deg, #2b2320 0%, #3d2f28 100%);
+  color: #f4ede4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.zone {
+  text-align: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(244, 237, 228, 0.06);
+  border: 1px solid rgba(244, 237, 228, 0.15);
+  min-width: 110px;
+}
+.city {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #d98e56;
+  margin-bottom: 6px;
+}
+.time {
+  font-size: 24px;
+  font-weight: bold;
+  color: #f4ede4;
+}
+.date {
+  font-size: 11px;
+  color: #b8a99a;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+<div class="container" id="clocks"></div>
+<script>
+const zones = [
+  { city: "Home", tz: "America/New_York" },
+  { city: "Current Base", tz: "Asia/Bangkok" },
+  { city: "UTC", tz: "UTC" }
+];
+
+function render() {
+  const container = document.getElementById("clocks");
+  container.innerHTML = "";
+  zones.forEach(z => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("en-US", { timeZone: z.tz, hour: "2-digit", minute: "2-digit", hour12: true });
+    const dateStr = now.toLocaleDateString("en-US", { timeZone: z.tz, weekday: "short", month: "short", day: "numeric" });
+    const div = document.createElement("div");
+    div.className = "zone";
+    div.innerHTML = `<div class="city">${z.city}</div><div class="time">${timeStr}</div><div class="date">${dateStr}</div>`;
+    container.appendChild(div);
+  });
+}
+render();
+setInterval(render, 1000);
+</script>
+</body>
+</html>
