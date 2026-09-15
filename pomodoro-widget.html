@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Pomodoro Widget</title>
+<style>
+  :root{
+    --pink: #f6d9e4;
+    --pink-dark: #e8a8c2;
+    --ink: #5b3a4a;
+    --card: #fff5f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .widget {
+    width: 260px;
+    background: var(--card);
+    border: 1px solid var(--pink-dark);
+    border-radius: 18px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(232,168,194,0.35);
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .tabs span {
+    cursor: pointer;
+    opacity: 0.55;
+  }
+  .tabs span.active {
+    opacity: 1;
+    font-weight: 600;
+    border-bottom: 2px solid var(--pink-dark);
+    padding-bottom: 2px;
+  }
+  .cat {
+    font-size: 46px;
+    margin: 6px 0;
+  }
+  .label {
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .time {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 4px 0 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .controls button {
+    background: var(--pink-dark);
+    border: none;
+    color: white;
+    padding: 8px 18px;
+    margin: 0 4px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .controls button:hover {
+    background: #d98cae;
+    transform: translateY(-1px);
+  }
+  .controls button.secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--pink-dark);
+  }
+  input.task {
+    margin-top: 14px;
+    width: 100%;
+    border: 1px solid var(--pink-dark);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--ink);
+    background: white;
+    outline: none;
+  }
+</style>
+</head>
+<body>
+  <div class="widget">
+    <div class="tabs">
+      <span id="tab-focus" class="active" onclick="setMode('focus')">Focus 25</span>
+      <span id="tab-short" onclick="setMode('short')">Short 5</span>
+      <span id="tab-long" onclick="setMode('long')">Long 15</span>
+    </div>
+    <div class="cat" id="cat">🐈‍⬛</div>
+    <div class="label" id="statusLabel">Focus session</div>
+    <div class="time" id="time">25:00</div>
+    <div class="controls">
+      <button id="startBtn" onclick="toggle()">Start</button>
+      <button class="secondary" onclick="reset()">Reset</button>
+    </div>
+    <input class="task" id="taskInput" placeholder="What would you like to accomplish?" />
+  </div>
+
+<script>
+  const durations = { focus: 25*60, short: 5*60, long: 15*60 };
+  const cats = { focus: "🐈‍⬛", short: "😺", long: "😴" };
+  let mode = "focus";
+  let secondsLeft = durations.focus;
+  let running = false;
+  let timerId = null;
+
+  const timeEl = document.getElementById('time');
+  const startBtn = document.getElementById('startBtn');
+  const catEl = document.getElementById('cat');
+  const statusEl = document.getElementById('statusLabel');
+
+  function format(s) {
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const sec = (s%60).toString().padStart(2,'0');
+    return m + ":" + sec;
+  }
+
+  function render() {
+    timeEl.textContent = format(secondsLeft);
+    catEl.textContent = cats[mode];
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    secondsLeft = durations[mode];
+    running = false;
+    clearInterval(timerId);
+    startBtn.textContent = "Start";
+    document.querySelectorAll('.tabs span').forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + (newMode === 'focus' ? 'focus' : newMode === 'short' ? 'short' : 'long')).classList.add('active');
+    statusEl.textContent = newMode === 'focus' ? "Focus session" : newMode === 'short' ? "Short break" : "Long break";
+    render();
+  }
+
+  function toggle() {
+    running = !running;
+    startBtn.textContent = running ? "Pause" : "Start";
+    if (running) {
+      timerId = setInterval(() => {
+        if (secondsLeft > 0) {
+          secondsLeft--;
+          render();
+        } else {
+          clearInterval(timerId);
+          running = false;
+          startBtn.textContent = "Start";
+          statusEl.textContent = "Done! 🎉";
+        }
+      }, 1000);
+    } else {
+      clearInterval(timerId);
+    }
+  }
+
+  function reset() {
+    running = false;
+    clearInterval(timerId);
+    secondsLeft = durations[mode];
+    startBtn.textContent = "Start";
+    statusEl.textContent = mode === 'focus' ? "Focus session" : mode === 'short' ? "Short break" : "Long break";
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
