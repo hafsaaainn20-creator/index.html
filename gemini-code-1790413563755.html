@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    /* 🎨 EDIT YOUR COLORS HERE */
+    :root {
+      --bg-color: #1C1B1A;
+      --card-bg: #262422;
+      --text-main: #FAF8F5;
+      --text-muted: #A8A09A;
+      --accent-color: #D4A373;
+      --border-color: #383533;
+    }
+
+    body {
+      font-family: -apple-system, sans-serif;
+      background: var(--bg-color);
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .mode-label { font-size: 0.72rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+    .timer { font-size: 2.4rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin: 8px 0; color: var(--text-main); }
+    .btn-group { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+    button { background: var(--border-color); color: var(--text-main); border: none; border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer; font-size: 0.75rem; }
+    .btn-main { background: var(--accent-color); color: #1C1B1A; font-weight: 700; }
+    button:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="mode-label" id="mode">🧠 Focus Mode (25M)</div>
+    <div class="timer" id="time">25:00</div>
+    <div class="btn-group">
+      <button class="btn-main" onclick="toggleTimer()">Start / Pause</button>
+      <button onclick="setMode(1500, '🧠 Focus Mode (25M)')">25m</button>
+      <button onclick="setMode(300, '☕ Short Break (5M)')">5m</button>
+      <button onclick="setMode(900, '🌿 Long Rest (15M)')">15m</button>
+      <button onclick="resetTimer()">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    let timeLeft = 1500, timerId = null, currentModeTime = 1500;
+    function updateDisplay() {
+      let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+      document.getElementById('time').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+    function setMode(seconds, label) {
+      clearInterval(timerId); timerId = null;
+      currentModeTime = seconds; timeLeft = seconds;
+      document.getElementById('mode').innerText = label;
+      updateDisplay();
+    }
+    function toggleTimer() {
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      else { timerId = setInterval(() => { if (timeLeft > 0) { timeLeft--; updateDisplay(); } else { clearInterval(timerId); alert("Timer completed!"); } }, 1000); }
+    }
+    function resetTimer() { clearInterval(timerId); timerId = null; timeLeft = currentModeTime; updateDisplay(); }
+  </script>
+</body>
+</html>
