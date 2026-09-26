@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    /* 🎨 EDIT YOUR COLORS HERE */
+    :root {
+      --bg-color: #1C1B1A;
+      --card-bg: #262422;
+      --text-main: #FAF8F5;
+      --text-muted: #A8A09A;
+      --accent-color: #D4A373;
+      --border-color: #383533;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: var(--bg-color);
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px 24px;
+      text-align: center;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .date {
+      font-size: 0.70rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .quote {
+      font-size: 0.92rem;
+      font-style: italic;
+      color: var(--text-main);
+      line-height: 1.45;
+      margin-bottom: 14px;
+      min-height: 40px;
+    }
+    .btn {
+      background: var(--accent-color);
+      color: #1C1B1A;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .completed { background: #4A6B53 !important; color: #FAF8F5 !important; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="date" id="current-date"></div>
+    <div class="quote" id="daily-quote">Loading daily affirmation...</div>
+    <button class="btn" id="claim-btn" onclick="claimAffirmation()">✨ Embody This Today</button>
+  </div>
+
+  <script>
+    const affirmations = [
+      "I am allowed to take space and move at my own healthy pace.",
+      "My productivity does not define my inherent self-worth.",
+      "Consistency over perfection, every single day.",
+      "Nourishing my mind and body is my top priority.",
+      "Small daily progress adds up to life-changing results."
+    ];
+    
+    const today = new Date();
+    document.getElementById('current-date').innerText = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    document.getElementById('daily-quote').innerText = `"${affirmations[dayOfYear % affirmations.length]}"`;
+
+    function claimAffirmation() {
+      const btn = document.getElementById('claim-btn');
+      btn.innerText = "✓ Intention Set for Today";
+      btn.classList.add('completed');
+    }
+  </script>
+</body>
+</html>
